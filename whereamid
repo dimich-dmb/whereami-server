@@ -3,22 +3,34 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import setproctitle
 import os
- 
+import syslog
+
+class Logger:
+    def log(message):
+        syslog.syslog(syslog.LOG_INFO | syslog.LOG_DAEMON, message)
+
+    def err(message):
+        syslog.syslog(syslog.LOG_ERR | syslog.LOG_DAEMON, message)
+
 class HTTPServer_RequestHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
+        Logger.log("Request from %s" % self.client_address[0]);
         self.send_response(200)
         message = self.client_address[0] + "\n"
         self.wfile.write(bytes(message, "utf8"))
         return
 
     def run(port = 80):
+        Logger.log("Listening on port %d" % port);
         server_address = ('', port)
         httpd = HTTPServer(server_address, HTTPServer_RequestHandler)
         httpd.serve_forever()
 
 def main():
-    setproctitle.setproctitle(os.path.basename(__file__))
+    title = os.path.basename(__file__)
+    setproctitle.setproctitle(title)
+    syslog.openlog(title);
     HTTPServer_RequestHandler.run(8080)
 
 if __name__ == "__main__":
