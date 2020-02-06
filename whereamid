@@ -18,6 +18,8 @@ class HTTPServer_RequestHandler(BaseHTTPRequestHandler):
         Logger.log("Request from %s: '%s'" % (self.client_address[0], self.requestline));
         if self.path == '/':
             self.send_response(200)
+            self.send_header("Content-type", "text/plain")
+            self.end_headers()
             message = self.client_address[0] + "\n"
             self.wfile.write(bytes(message, "utf8"))
         else:
